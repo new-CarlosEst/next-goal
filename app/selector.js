@@ -136,12 +136,12 @@ function getMatchStatus(event) {
         
         // Verificar si es prórroga primera parte
         if (statusName === 'STATUS_EXTRA_TIME' && clock < 105) {
-            return { text: 'PRÓRROGA 1ª', class: 'live' };
+            return { text: `PRÓRROGA 1ª ${displayClock}`, class: 'live' };
         }
         
         // Verificar si es prórroga segunda parte
         if (statusName === 'STATUS_EXTRA_TIME' && clock >= 105) {
-            return { text: 'PRÓRROGA 2ª', class: 'live' };
+            return { text: `PRÓRROGA 2ª ${displayClock}`, class: 'live' };
         }
         
         // Verificar si es penaltis
@@ -154,8 +154,13 @@ function getMatchStatus(event) {
             return { text: `1ª ${displayClock}`, class: 'live' };
         } else if (clock >= 45 && clock < 90) {
             return { text: `2ª ${displayClock}`, class: 'live' };
+        } else if (clock >= 90) {
+            // Tiempo de descuento en segunda parte
+            // Calcular minutos de descuento
+            const injuryTime = Math.floor(clock - 90);
+            return { text: `2ª +${injuryTime}' desc`, class: 'live', clock: clock, isInjuryTime: true };
         } else {
-            return { text: displayClock, class: 'live' };
+            return { text: `2ª ${displayClock}`, class: 'live' };
         }
     }
     
@@ -238,7 +243,7 @@ const today = generateDateOptions();
 competitionSelect.value = 'fifa.world';
 fetchMatches('fifa.world', today).then(data => displayMatches(data));
 
-// Actualización automática cada 15 segundos
+// Actualización automática cada 15 segundos (para marcadores y datos completos)
 setInterval(async () => {
     const competition = competitionSelect.value;
     const dateIndex = dateSelect.value;
@@ -249,6 +254,21 @@ setInterval(async () => {
         displayMatches(data);
     }
 }, 15000); // 15 segundos
+
+// Actualización del tiempo de descuento cada segundo
+setInterval(() => {
+    document.querySelectorAll('.match-status[data-injury-time="true"]').forEach(statusEl => {
+        const baseClock = parseFloat(statusEl.dataset.baseClock);
+        const startTime = parseFloat(statusEl.dataset.startTime);
+        const elapsed = (Date.now() - startTime) / 1000;
+        const currentClock = baseClock + elapsed;
+        const injuryMinutes = Math.floor(currentClock - 90);
+        const injurySeconds = Math.floor((currentClock - 90 - injuryMinutes) * 60);
+        
+        // Formato: 2ª 90:XX +Y' desc
+        statusEl.textContent = `2ª 90:${String(injurySeconds).padStart(2, '0')} +${injuryMinutes}' desc`;
+    });
+}, 1000); // 1 segundo
 
 // Función para obtener partidos
 async function fetchMatches(competition, date) {
@@ -315,7 +335,7 @@ function displayMatches(data) {
         
         matchDiv.innerHTML = `
             <div class="match-row">
-                <span class="match-status ${matchStatus.class}">${matchStatus.text}</span>
+                <span class="match-status ${matchStatus.class}" ${matchStatus.isInjuryTime ? `data-injury-time="true" data-base-clock="${matchStatus.clock}" data-start-time="${Date.now()}"` : ''}>${matchStatus.text}</span>
                 <div class="match-details">
                     <span class="home-team">
                         ${translateTeamName(homeTeam.team.displayName)}
