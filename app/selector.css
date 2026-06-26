@@ -1,0 +1,317 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #050608;
+    color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#selector-container {
+    width: 100%;
+    max-width: 550px;
+    padding: 20px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 20px 18px 20px;
+    border-bottom: 1px solid #1f222b;
+    justify-content: center;
+}
+
+.logo-container img {
+    width: 32px;
+    height: 32px;
+}
+
+.logo-container h1 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+}
+
+.competition-container {
+    background-color: #0f1115;
+    border: 1px solid #1f222b;
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.selectors-row {
+    display: flex;
+    align-items: center;
+    background-color: #0d0f12;
+}
+
+.select-wrapper {
+    flex: 1;
+    position: relative;
+}
+
+.select-wrapper:first-child {
+    border-right: 1px solid #1f222b;
+}
+
+#competition-select,
+#date-select {
+    width: 100%;
+    padding: 14px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    background-color: transparent;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238892b0' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 20px center;
+    padding-right: 40px;
+}
+
+.date-wrapper {
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+}
+
+.calendar-icon {
+    width: 18px;
+    height: 18px;
+    stroke: #8892b0;
+    pointer-events: none;
+    margin-right: -10px;
+}
+
+#date-select {
+    padding-left: 10px;
+}
+
+#competition-select:focus,
+#date-select:focus {
+    color: #3b82f6;
+}
+
+#competition-select option,
+#date-select option {
+    background-color: #0f1115;
+    color: #ffffff;
+    padding: 10px;
+}
+
+.blue-divider {
+    height: 2px;
+    background: linear-gradient(90deg, #1d4ed8, #3b82f6, #00d4ff);
+    width: 100%;
+}
+
+#matches-container {
+    padding: 16px 20px 20px 20px;
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for matches list */
+#matches-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#matches-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#matches-container::-webkit-scrollbar-thumb {
+    background: #1f222b;
+    border-radius: 3px;
+}
+
+#matches-container::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+}
+
+.match {
+    background-color: #0d0f12;
+    border: 1px solid #1f222b;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.match:hover {
+    border-color: rgba(59, 130, 246, 0.5);
+    background-color: #12151a;
+    transform: translateY(-1px);
+}
+
+.match.selected {
+    border-color: #3b82f6;
+    background-color: #121620;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+.match-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.match-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    min-width: 82px;
+    justify-content: center;
+    letter-spacing: 0.5px;
+}
+
+.match-status.final {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #7e879b;
+}
+
+.match-status.live {
+    background-color: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
+.match-status.live::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #ef4444;
+    box-shadow: 0 0 6px #ef4444;
+    animation: pulse 1.5s infinite;
+}
+
+.match-status.upcoming {
+    background-color: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
+
+.match-status.upcoming::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #3b82f6;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.9); opacity: 0.5; }
+    50% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(0.9); opacity: 0.5; }
+}
+
+.match-details {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
+    margin-left: 12px;
+}
+
+.home-team {
+    flex: 1;
+    text-align: right;
+    font-weight: 600;
+    font-size: 14px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.away-team {
+    flex: 1;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+}
+
+.team-logo {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.match-score-center {
+    font-weight: 700;
+    color: #3b82f6;
+    font-size: 15px;
+    min-width: 55px;
+    text-align: center;
+    letter-spacing: -0.2px;
+}
+
+.match-score-center.vs {
+    color: #4b5563;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.add-match-btn {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    margin-left: 12px;
+}
+
+.add-match-btn:hover {
+    background-color: #3b82f6;
+    transform: scale(1.05);
+}
+
+.add-match-btn.added {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.add-match-btn.added:hover {
+    background-color: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.5);
+}
+

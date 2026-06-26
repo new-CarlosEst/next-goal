@@ -1,0 +1,154 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+}
+
+#scoreboard-overlay {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* ── Empty state ── */
+#no-match-message {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.alert-icon { display: none; }
+
+#no-match-message p {
+    margin: 0;
+    font-weight: 500;
+}
+
+/* ── Stack of cards ── */
+#scoreboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ── Single match bug – fully transparent, no decoration ── */
+.match-bug {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    animation: slideIn 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to   { transform: translateX(0);     opacity: 1; }
+}
+
+/* ── Score row: logo · score · dash · score · logo ── */
+.bug-score-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bug-team-logo {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+}
+
+.bug-score-center {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.bug-score {
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 34px;
+    min-width: 22px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.bug-score-dash {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 700;
+    font-size: 24px;
+}
+
+/* Goal flash */
+.bug-score.changed {
+    animation: scoreFlash 0.8s ease;
+}
+
+@keyframes scoreFlash {
+    0%   { color: #ffffff; }
+    40%  { color: #00d4ff; transform: scale(1.25); }
+    100% { color: #ffffff; transform: scale(1); }
+}
+
+/* ── Clock / status pill ── */
+.bug-time-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bug-time-pill {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #ffffff;
+}
+
+.bug-time-pill.live {}
+
+.bug-time-pill.live::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: #ef4444;
+    animation: livePulse 1.5s infinite;
+}
+
+.bug-time-pill.upcoming {}
+
+.bug-time-pill.upcoming::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: #60a5fa;
+}
+
+@keyframes livePulse {
+    0%   { opacity: 0.4; transform: scale(0.8); }
+    50%  { opacity: 1;   transform: scale(1.2); }
+    100% { opacity: 0.4; transform: scale(0.8); }
+}

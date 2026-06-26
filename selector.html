@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./app/selector.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Selector partidos - Next Goal</title>
+</head>
+<body>
+    <div id="selector-container">
+        <div class="competition-container">
+            <div class="logo-container">
+                <img src="./resources/logo/logo-white.svg" alt="Logo-Next-Goal">
+                <h1>Next Goal</h1>
+            </div>
+            
+            <div class="selectors-row">
+                <div class="select-wrapper">
+                    <select id="competition-select">
+                        <option value="fifa.world">Mundial 2026</option>
+                        <option value="eng.1">Premier League</option>
+                        <option value="esp.1">La Liga</option>
+                        <option value="esp.2">Segunda División</option>
+                        <option value="ger.1">Bundesliga</option>
+                        <option value="ita.1">Serie A</option>
+                        <option value="fra.1">Ligue 1</option>
+                        <option value="por.1">Liga Portuguesa</option>
+                        <option value="eng.2">Championship</option>
+                        <option value="uefa.euro">Eurocopa</option>
+                        <option value="conmebol.america">Copa América</option>
+                    </select>
+                </div>
+                
+                <div class="select-wrapper date-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="calendar-icon">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                        <line x1="16" x2="16" y1="2" y2="6"></line>
+                        <line x1="8" x2="8" y1="2" y2="6"></line>
+                        <line x1="3" x2="21" y1="10" y2="10"></line>
+                    </svg>
+                    <select id="date-select"></select>
+                </div>
+            </div>
+            
+            <div class="blue-divider"></div>
+            
+            <div id="matches-container"></div>
+        </div>
+    </div>
+    <script src="./app/selector.js"></script>
+</body>
+</html>

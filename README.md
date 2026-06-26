@@ -69,7 +69,7 @@ Componentes para mostrar partidos de fútbol en vivo en OBS Studio con datos de 
 
 3. **Seleccionar partido:**
    - Haz clic en el botón "Añadir" junto al partido que quieres mostrar
-   - El partido se guardará y aparecerá en el componente Match.html
+   - El partido se guardará y aparecerá en el componente scoreboard.html
    - Puedes añadir múltiples partidos a la lista
 
 4. **Actualización automática:**
