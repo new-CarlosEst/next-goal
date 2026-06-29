@@ -98,16 +98,18 @@ function translateTeamName(name) {
     return name;
 }
 
-// Función para convertir fecha local a fecha UTC para la API
-// Esto convierte la fecha local (ej. 27 de junio en España) a la fecha UTC correspondiente
+// Función para formatear fecha a yyyymmdd para la API (convertir local a UTC)
 function formatDateForAPI(date) {
-    // Crear un objeto Date con la fecha local a medianoche
-    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    // Crear fecha UTC basada en la fecha local
+    const utcDate = new Date(Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+    ));
     
-    // Obtener la fecha UTC correspondiente
-    const year = localDate.getUTCFullYear();
-    const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(localDate.getUTCDate()).padStart(2, '0');
+    const year = utcDate.getUTCFullYear();
+    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(utcDate.getUTCDate()).padStart(2, '0');
     return `${year}${month}${day}`;
 }
 
