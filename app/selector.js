@@ -98,11 +98,16 @@ function translateTeamName(name) {
     return name;
 }
 
-// Función para formatear fecha a yyyymmdd
-function formatDate(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+// Función para convertir fecha local a fecha UTC para la API
+// Esto convierte la fecha local (ej. 27 de junio en España) a la fecha UTC correspondiente
+function formatDateForAPI(date) {
+    // Crear un objeto Date con la fecha local a medianoche
+    const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    // Obtener la fecha UTC correspondiente
+    const year = localDate.getUTCFullYear();
+    const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getUTCDate()).padStart(2, '0');
     return `${year}${month}${day}`;
 }
 
@@ -134,34 +139,13 @@ function getMatchStatus(event) {
             return { text: 'DESCANSO', class: 'live' };
         }
         
-        // Verificar si es prórroga primera parte
-        if (statusName === 'STATUS_EXTRA_TIME' && clock < 105) {
-            return { text: `PRÓRROGA 1ª ${displayClock}`, class: 'live' };
-        }
-        
-        // Verificar si es prórroga segunda parte
-        if (statusName === 'STATUS_EXTRA_TIME' && clock >= 105) {
-            return { text: `PRÓRROGA 2ª ${displayClock}`, class: 'live' };
-        }
-        
         // Verificar si es penaltis
         if (statusName === 'STATUS_PENALTY_SHOOTOUT') {
             return { text: 'PENALTIS', class: 'live' };
         }
         
-        // Si es tiempo normal, verificar primera o segunda parte
-        if (clock < 45) {
-            return { text: `1ª ${displayClock}`, class: 'live' };
-        } else if (clock >= 45 && clock < 90) {
-            return { text: `2ª ${displayClock}`, class: 'live' };
-        } else if (clock >= 90) {
-            // Tiempo de descuento en segunda parte
-            // Calcular minutos de descuento
-            const injuryTime = Math.floor(clock - 90);
-            return { text: `2ª +${injuryTime}' desc`, class: 'live', clock: clock, isInjuryTime: true };
-        } else {
-            return { text: `2ª ${displayClock}`, class: 'live' };
-        }
+        // Para cualquier otro estado en vivo, mostrar "En directo"
+        return { text: 'En directo', class: 'live' };
     }
     
     // Si el partido está finalizado según la API
@@ -174,7 +158,7 @@ function getMatchStatus(event) {
         const diffMs = matchDate - now;
         
         if (diffMs <= 0) {
-            return { text: 'VIVO', class: 'live' };
+            return { text: 'En directo', class: 'live' };
         }
         
         return { text: formatToSpainTime(event.date), class: 'upcoming' };
@@ -187,7 +171,7 @@ function getMatchStatus(event) {
     if (diffHours < -2) {
         return { text: 'FINAL', class: 'final' };
     } else if (diffMs <= 0) {
-        return { text: 'VIVO', class: 'live' };
+        return { text: 'En directo', class: 'live' };
     } else {
         return { text: formatToSpainTime(event.date), class: 'upcoming' };
     }
@@ -204,7 +188,7 @@ function generateDateOptions() {
     const dateSelect = document.getElementById('date-select');
     const today = new Date();
     
-    // Opciones: Hoy, Mañana, y siguientes 30 días
+    // Opciones: Hoy, Mañana, y siguientes 30 días (fechas locales)
     const options = [
         { label: 'Hoy', date: today },
         { label: 'Mañana', date: new Date(today.getTime() + 24 * 60 * 60 * 1000) }
@@ -245,6 +229,9 @@ fetchMatches('fifa.world', today).then(data => displayMatches(data));
 
 // Actualización automática cada 15 segundos (para marcadores y datos completos)
 setInterval(async () => {
+    // Eliminar partidos finalizados hace más de 5 minutos
+    removeFinishedMatches();
+    
     const competition = competitionSelect.value;
     const dateIndex = dateSelect.value;
     const date = dateSelect.dates[dateIndex];
@@ -255,24 +242,10 @@ setInterval(async () => {
     }
 }, 15000); // 15 segundos
 
-// Actualización del tiempo de descuento cada segundo
-setInterval(() => {
-    document.querySelectorAll('.match-status[data-injury-time="true"]').forEach(statusEl => {
-        const baseClock = parseFloat(statusEl.dataset.baseClock);
-        const startTime = parseFloat(statusEl.dataset.startTime);
-        const elapsed = (Date.now() - startTime) / 1000;
-        const currentClock = baseClock + elapsed;
-        const injuryMinutes = Math.floor(currentClock - 90);
-        const injurySeconds = Math.floor((currentClock - 90 - injuryMinutes) * 60);
-        
-        // Formato: 2ª 90:XX +Y' desc
-        statusEl.textContent = `2ª 90:${String(injurySeconds).padStart(2, '0')} +${injuryMinutes}' desc`;
-    });
-}, 1000); // 1 segundo
 
 // Función para obtener partidos
 async function fetchMatches(competition, date) {
-    const formattedDate = formatDate(date);
+    const formattedDate = formatDateForAPI(date);
     const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${competition}/scoreboard?dates=${formattedDate}`;
     
     try {
@@ -280,16 +253,35 @@ async function fetchMatches(competition, date) {
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error('Error fetching matches, trying fallback JSON:', error);
-        try {
-            const fallbackResponse = await fetch('./resources/scoreboard.json');
-            const fallbackData = await fallbackResponse.json();
-            return fallbackData;
-        } catch (e) {
-            console.error('Error fetching fallback data:', e);
-            return null;
-        }
+        console.error('Error fetching matches:', error);
+        return null;
     }
+}
+
+// Función para eliminar partidos finalizados después de 1 hora
+function removeFinishedMatches() {
+    const selectedMatchesStr = localStorage.getItem('selectedMatches');
+    if (!selectedMatchesStr) return;
+    
+    let selectedMatches = JSON.parse(selectedMatchesStr);
+    const now = Date.now();
+    const oneHourMs = 60 * 60 * 1000;
+    
+    // Filtrar partidos que han finalizado hace más de 1 hora
+    const filteredMatches = selectedMatches.filter(match => {
+        if (match.statusClass === 'final' && match.finishedAt) {
+            const timeSinceFinish = now - match.finishedAt;
+            return timeSinceFinish < oneHourMs;
+        }
+        return true;
+    });
+    
+    // Si hubo cambios, actualizar localStorage
+    if (filteredMatches.length !== selectedMatches.length) {
+        localStorage.setItem('selectedMatches', JSON.stringify(filteredMatches));
+        return true; // Hubo cambios
+    }
+    return false; // No hubo cambios
 }
 
 // Función para mostrar partidos
@@ -304,7 +296,8 @@ function displayMatches(data) {
     
     // Check which matches are currently selected in localStorage
     const selectedMatchesStr = localStorage.getItem('selectedMatches');
-    const selectedMatches = selectedMatchesStr ? JSON.parse(selectedMatchesStr) : [];
+    let selectedMatches = selectedMatchesStr ? JSON.parse(selectedMatchesStr) : [];
+    let needsUpdate = false;
     
     data.events.forEach(event => {
         const matchDiv = document.createElement('div');
@@ -331,11 +324,27 @@ function displayMatches(data) {
         const isAdded = selectedMatches.some(m => m.id === event.id);
         if (isAdded) {
             matchDiv.classList.add('selected');
+            
+            // Actualizar estado del partido en localStorage si cambió
+            const matchIndex = selectedMatches.findIndex(m => m.id === event.id);
+            if (matchIndex > -1) {
+                const storedMatch = selectedMatches[matchIndex];
+                
+                // Si el partido cambió a finalizado y no tenía finishedAt
+                if (matchStatus.class === 'final' && storedMatch.statusClass !== 'final') {
+                    selectedMatches[matchIndex].statusClass = 'final';
+                    selectedMatches[matchIndex].status = matchStatus.text;
+                    selectedMatches[matchIndex].finishedAt = Date.now();
+                    selectedMatches[matchIndex].homeScore = homeTeam.score || 0;
+                    selectedMatches[matchIndex].awayScore = awayTeam.score || 0;
+                    needsUpdate = true;
+                }
+            }
         }
         
         matchDiv.innerHTML = `
             <div class="match-row">
-                <span class="match-status ${matchStatus.class}" ${matchStatus.isInjuryTime ? `data-injury-time="true" data-base-clock="${matchStatus.clock}" data-start-time="${Date.now()}"` : ''}>${matchStatus.text}</span>
+                <span class="match-status ${matchStatus.class}">${matchStatus.text}</span>
                 <div class="match-details">
                     <span class="home-team">
                         ${translateTeamName(homeTeam.team.displayName)}
@@ -380,7 +389,8 @@ function displayMatches(data) {
                     competition: competitionSelect.value,
                     competitionName: competitionSelect.options[competitionSelect.selectedIndex].text.toUpperCase(),
                     status: matchStatus.text,
-                    statusClass: matchStatus.class
+                    statusClass: matchStatus.class,
+                    finishedAt: matchStatus.class === 'final' ? Date.now() : null
                 };
                 currentList.push(selectedMatch);
                 addBtn.textContent = 'Quitar';

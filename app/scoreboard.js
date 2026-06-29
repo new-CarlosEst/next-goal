@@ -274,7 +274,7 @@ async function pollLiveScores() {
         try {
             data = await (await fetch(url)).json();
         } catch {
-            try { data = await (await fetch('./resources/scoreboard.json')).json(); } catch { return; }
+            return;
         }
 
         if (!data?.events) return;
